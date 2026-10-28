@@ -2,13 +2,13 @@
 // note, scheduled at `t` (AudioContext time) and cleans itself up when it stops.
 
 export type Out = {
-  ctx: AudioContext
+  ctx: BaseAudioContext // live AudioContext, or an OfflineAudioContext when exporting
   dest: AudioNode
 }
 
 const noiseBuffers = new WeakMap<BaseAudioContext, AudioBuffer>()
 
-function noise(ctx: AudioContext) {
+function noise(ctx: BaseAudioContext) {
   let buffer = noiseBuffers.get(ctx)
   if (!buffer) {
     buffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate)
@@ -19,7 +19,7 @@ function noise(ctx: AudioContext) {
   return buffer
 }
 
-function envelope(ctx: AudioContext, t: number, peak: number, attack: number, decay: number) {
+function envelope(ctx: BaseAudioContext, t: number, peak: number, attack: number, decay: number) {
   const gain = ctx.createGain()
   gain.gain.setValueAtTime(0.0001, t)
   gain.gain.exponentialRampToValueAtTime(peak, t + attack)

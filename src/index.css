@@ -79,6 +79,11 @@ h3 {
   background: linear-gradient(#12002b 0%, #3b0a6b 35%, #c2185b 52%, #ff8a65 60%);
 }
 
+/* optional picture behind everything; themes switch it on (see themes/*.css) */
+.engraving {
+  display: none;
+}
+
 .stars {
   position: absolute;
   inset: 0 0 40% 0;
@@ -173,7 +178,7 @@ h3 {
   position: absolute;
   left: 130px;
   bottom: 0;
-  height: min(48vh, 420px);
+  height: min(48vh, 420px, 40vw); /* 40vw keeps it clear of its mirror (bust/helmet) on tablets */
   padding: 0;
   border: 0;
   background: none;
@@ -258,9 +263,22 @@ h3 {
   }
 }
 
+/* phones: the sticker stands centered at the bottom of the home screen */
 @media (max-width: 639px) {
+  .wall-title-sub {
+    max-width: 92vw;
+    white-space: normal;
+    letter-spacing: 0.08em;
+  }
+
   .portrait {
-    display: none;
+    left: 50%;
+    translate: -50% 0;
+    height: min(34vh, 300px);
+  }
+
+  .portrait-tag {
+    right: -4px;
   }
 }
 
@@ -461,18 +479,39 @@ h3 {
     display: none;
   }
 
+  /* bigger, thumb-sized window controls */
+  .titlebar {
+    height: 36px;
+  }
+
+  .titlebar-buttons {
+    gap: 8px;
+  }
+
+  .titlebar-buttons button {
+    width: 34px;
+    height: 28px;
+  }
+
+  /* home screen: the two icon groups become two centered rows under the title */
   .desktop-icons {
+    left: 0;
+    right: 0;
     flex-direction: row;
+    justify-content: center;
+    gap: 12px;
+    padding: 0 8px;
   }
 
   .desktop-icons.left {
+    top: max(120px, 17vh);
     left: 0;
   }
 
   .desktop-icons.right {
-    top: 84px;
+    top: calc(max(120px, 17vh) + 92px);
     left: 0;
-    right: auto;
+    right: 0;
   }
 }
 
@@ -1004,12 +1043,27 @@ h3 {
   }
 
   .seq-grid {
-    /* keep 24px touch targets; the window scrolls sideways on narrow phones */
-    width: max-content;
-    min-width: 100%;
+    /* keep 24px touch targets; on narrow phones only the grid scrolls sideways */
+    overflow-x: auto;
     grid-template-columns: 40px repeat(16, minmax(22px, 1fr));
     gap: 2px;
     padding: 4px;
+  }
+
+  /* note names stay put while the grid scrolls sideways */
+  .seq-label,
+  .seq-gap {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: inherit;
+  }
+
+  .seq-label {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    background: #0d0221;
   }
 }
 
@@ -1306,6 +1360,19 @@ h3 {
 @media (max-width: 639px) {
   .load-status-text {
     display: none;
+  }
+
+  /* open windows as icons only, so the taskbar fits a phone */
+  .task {
+    flex: 0 0 auto;
+  }
+
+  .task span {
+    display: none;
+  }
+
+  .tray {
+    padding: 4px 6px;
   }
 }
 

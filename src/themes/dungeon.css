@@ -61,76 +61,200 @@
   opacity: 0.55;
 }
 
+/* Gustave Doré, "Now night her course began" (Paradise Lost, 1866; public domain),
+   darkened and fading into the black at the edges. It replaces the moon and horizon. */
+:root[data-theme='dungeon'] .engraving {
+  display: block;
+  position: absolute;
+  inset: 0;
+  background: url('../assets/dore-night.webp') center 42% / cover no-repeat;
+  opacity: 0.6;
+  -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, #000 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, #000 35%, transparent 100%);
+}
+
+:root[data-theme='dungeon'] .sun,
 :root[data-theme='dungeon'] .floor {
-  background: linear-gradient(#0a0707, #000);
-  border-top: 1px solid var(--bone-dim);
-  box-shadow: 0 -30px 60px #0008;
-  perspective: none;
+  display: none;
 }
 
 :root[data-theme='dungeon'] .grid {
   display: none;
 }
 
-/* two longswords framing the screen, point down */
-:root[data-theme='dungeon'] .wall-sword {
+/* ── clickable decorations (desktop layer, under the windows) ── */
+.wall-sword,
+.wall-helmet {
   position: absolute;
-  top: 2vh;
-  height: calc(100% - var(--taskbar-h) - 4vh);
-  aspect-ratio: 60 / 600;
-  width: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.wall-sword svg,
+.wall-helmet svg {
+  display: block;
+  width: 100%;
+  height: 100%;
   fill: #0b0807;
   stroke: var(--bone);
-  stroke-width: 1.4;
   stroke-linejoin: round;
+}
+
+.wall-sword svg *,
+.wall-helmet svg * {
   vector-effect: non-scaling-stroke;
+}
+
+.wall-sword:focus-visible,
+.wall-helmet:focus-visible {
+  outline: 1px dotted var(--bone);
+  outline-offset: 4px;
+}
+
+/* two longswords framing the screen, point down */
+.wall-sword {
+  top: 2vh;
+  height: calc(100% - 4vh);
+  aspect-ratio: 60 / 600;
   opacity: 0.75;
   filter: drop-shadow(0 0 10px #000);
+  transition: opacity 0.2s;
 }
 
-:root[data-theme='dungeon'] .wall-sword * {
-  vector-effect: non-scaling-stroke;
+.wall-sword:hover {
+  opacity: 1;
 }
 
-:root[data-theme='dungeon'] .wall-sword.left {
+.wall-sword svg {
+  stroke-width: 1.4;
+  transform-origin: 50% 3%; /* swings from the pommel */
+}
+
+.wall-sword.left {
   left: 8px;
 }
 
-:root[data-theme='dungeon'] .wall-sword.right {
+.wall-sword.right {
   right: 8px;
 }
 
-/* the great helm, mirroring the portrait sticker on the right */
-:root[data-theme='dungeon'] .wall-helmet {
-  position: absolute;
-  right: 150px;
-  bottom: calc(var(--taskbar-h) + 2vh);
-  height: min(36vh, 320px);
-  aspect-ratio: 200 / 220;
-  fill: #0b0807;
-  stroke: var(--bone);
-  stroke-width: 1.6;
-  stroke-linejoin: round;
-  opacity: 0.85;
+.wall-sword .glint {
+  fill: #fff;
+  stroke: none;
+  opacity: 0;
+}
+
+/* the blade shivers and a glint runs down it */
+.wall-sword svg.ringing {
+  animation: sword-ring 0.9s ease-out;
+}
+
+.wall-sword svg.ringing .glint {
+  animation: sword-glint 0.6s ease-in;
+}
+
+@keyframes sword-ring {
+  0% { rotate: 0deg; }
+  10% { rotate: 1.6deg; }
+  20% { rotate: -1.4deg; }
+  32% { rotate: 1.1deg; }
+  44% { rotate: -0.8deg; }
+  58% { rotate: 0.5deg; }
+  72% { rotate: -0.3deg; }
+  100% { rotate: 0deg; }
+}
+
+@keyframes sword-glint {
+  0% { opacity: 0.9; translate: 0 0; }
+  100% { opacity: 0; translate: 0 400px; }
+}
+
+/* the bascinet, mirroring the portrait on the right and facing the centre */
+.wall-helmet {
+  right: 130px;
+  bottom: 2vh;
+  height: min(36vh, 320px, 30vw);
+  aspect-ratio: 1;
+  opacity: 0.9;
   filter: drop-shadow(0 0 18px #000) drop-shadow(0 0 40px #a3141c22);
 }
 
-:root[data-theme='dungeon'] .wall-helmet * {
-  vector-effect: non-scaling-stroke;
+.wall-helmet svg {
+  stroke-width: 1.6;
+  transform: scaleX(-1);
 }
 
-:root[data-theme='dungeon'] .wall-helmet .slit {
+.wall-helmet .slit {
   fill: #000;
 }
 
-:root[data-theme='dungeon'] .wall-helmet .hatch {
+.wall-helmet .hatch {
   stroke-width: 1;
   opacity: 0.45;
 }
 
+.wall-helmet .ridge {
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+/* knocked back by the blow */
+.wall-helmet svg.struck {
+  animation: helmet-hit 0.45s ease-out;
+}
+
+@keyframes helmet-hit {
+  0% { transform: scaleX(-1) translate(0, 0) rotate(0deg); }
+  15% { transform: scaleX(-1) translate(-10px, 2px) rotate(-6deg); filter: brightness(1.8); }
+  40% { transform: scaleX(-1) translate(4px, 0) rotate(3deg); }
+  65% { transform: scaleX(-1) translate(-2px, 0) rotate(-1.5deg); }
+  100% { transform: scaleX(-1) translate(0, 0) rotate(0deg); }
+}
+
+.wall-helmet .spark {
+  position: absolute;
+  translate: -50% -50%;
+  color: #ffd27a;
+  font-size: 34px;
+  line-height: 1;
+  text-shadow: 0 0 10px #ff8a1e, 0 0 24px #a3141c;
+  pointer-events: none;
+  animation: spark 0.6s ease-out forwards;
+}
+
+@keyframes spark {
+  0% { scale: 0.3; rotate: 0deg; opacity: 1; }
+  60% { scale: 1.4; opacity: 1; }
+  100% { scale: 1.8; rotate: 45deg; opacity: 0; }
+}
+
+.wall-helmet .dents {
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  translate: -50% 0;
+  padding: 1px 8px;
+  border: 1px solid var(--bone-dim);
+  background: #000;
+  color: var(--bone);
+  font: italic 13px var(--ui-font);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wall-sword svg.ringing,
+  .wall-sword svg.ringing .glint,
+  .wall-helmet svg.struck,
+  .wall-helmet .spark {
+    animation: none;
+  }
+}
+
 @media (max-width: 639px) {
-  :root[data-theme='dungeon'] .wall-sword,
-  :root[data-theme='dungeon'] .wall-helmet {
+  .wall-sword,
+  .wall-helmet {
     display: none;
   }
 }
@@ -278,11 +402,12 @@
 
 /* relic window: RPG item card */
 :root[data-theme='dungeon'] .relic-helmet {
-  width: 64px;
-  height: 70px;
+  width: 72px;
+  height: 72px;
   fill: #0b0807;
   stroke: var(--bone);
   stroke-width: 4;
+  transform: scaleX(-1);
 }
 
 :root[data-theme='dungeon'] .relic-helmet .slit {
@@ -454,6 +579,21 @@
 :root[data-theme='dungeon'] .seq-label {
   color: var(--muted);
   font-family: var(--ui-font);
+}
+
+@media (max-width: 639px) {
+  :root[data-theme='dungeon'] .wall-title-sub {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+
+  :root[data-theme='dungeon'] .seq-label {
+    background: #050404;
+  }
+
+  :root[data-theme='dungeon'] .titlebar {
+    height: 38px;
+  }
 }
 
 :root[data-theme='dungeon'] .seq-cell {

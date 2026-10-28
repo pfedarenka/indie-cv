@@ -1,40 +1,64 @@
-// A crusader's great helm in the same tomb-engraving line art as the swords:
-// barrel shape, two eye slits split by a nasal band, a cross of breathing holes
-// and hatching for shadow. 200×220 box; colours come from CSS (fill / stroke).
+import { useId } from 'react'
+
+// A "pig-faced" bascinet seen three-quarters from the left, snout pointing right,
+// in tomb-engraving line art: pointed skull, conical visor with an eye slit and
+// breathing holes, a hinge rivet, a mail aventail and hatching for shadow.
+// 240×240 box; colours come from CSS (fill / stroke on the svg).
 export function Helmet({ className }: { className?: string }) {
+  const id = useId()
+  const mail = `${id}-mail`
+  const skullClip = `${id}-skull`
+
+  const skull = 'M46 178 C30 112 56 40 112 12 C150 28 178 64 184 104 L182 150 Q130 176 46 178 Z'
   const holes: [number, number][] = []
-  // a cross of breathing holes on each cheek
-  for (const cx of [62, 138]) {
-    for (const dy of [-12, 0, 12]) holes.push([cx, 160 + dy])
-    for (const dx of [-12, 12]) holes.push([cx + dx, 160])
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 5 - row; col++) holes.push([150 + col * 11 + row * 6, 150 + row * 11])
   }
 
   return (
-    <svg className={className} viewBox="0 0 200 220" aria-hidden="true">
-      {/* shell */}
-      <path d="M30 204 L30 84 Q30 18 100 16 Q170 18 170 84 L170 204 Q100 218 30 204 Z" />
-      {/* hatching on the shadow side */}
-      <g className="hatch">
-        {Array.from({ length: 6 }, (_, i) => (
-          <line key={i} x1={38 + i * 5} y1={120} x2={38 + i * 5} y2={198} />
+    <svg className={className} viewBox="0 0 240 240" aria-hidden="true">
+      <defs>
+        {/* little overlapping rings for the mail */}
+        <pattern id={mail} width="9" height="7" patternUnits="userSpaceOnUse">
+          <path d="M0 7 Q4.5 -1 9 7" fill="none" />
+        </pattern>
+        <clipPath id={skullClip}>
+          <path d={skull} />
+        </clipPath>
+      </defs>
+
+      {/* mail aventail hanging from the skull */}
+      <path d="M50 168 Q44 206 36 232 L170 232 Q160 204 166 176 Q110 186 50 168 Z" />
+      <path d="M50 168 Q44 206 36 232 L170 232 Q160 204 166 176 Q110 186 50 168 Z" fill={`url(#${mail})`} />
+
+      {/* skull */}
+      <path d={skull} />
+      {/* hatching on the shadowed back of the skull */}
+      <g className="hatch" clipPath={`url(#${skullClip})`}>
+        {Array.from({ length: 9 }, (_, i) => (
+          <line key={i} x1={40 + i * 7} y1={30 + i * 3} x2={30 + i * 7} y2={190} />
         ))}
       </g>
-      {/* brow band */}
-      <path d="M30 88 Q100 78 170 88 L170 100 Q100 90 30 100 Z" />
-      {/* eye slits */}
-      <path d="M38 106 L90 104 L90 114 L38 116 Z" className="slit" />
-      <path d="M110 104 L162 106 L162 116 L110 114 Z" className="slit" />
-      {/* nasal band, running from the crown to the chin */}
-      <path d="M93 18 L107 18 L107 214 L93 214 Z" />
-      {/* rivets */}
-      {[40, 60, 140, 160].map((x) => (
-        <circle key={x} cx={x} cy={94} r={2.2} />
-      ))}
-      {[40, 70, 130, 160].map((y) => (
-        <circle key={y} cx={100} cy={y < 100 ? y : y + 40} r={2.2} />
-      ))}
+      {/* the keel running over the top */}
+      <path d="M112 12 Q96 70 92 172" fill="none" />
+
+      {/* conical visor (the "snout") */}
+      <path d="M118 92 Q176 88 232 134 Q235 141 228 146 Q182 184 124 198 Q104 150 118 92 Z" />
+      {/* a highlight ridge along the snout */}
+      <path d="M126 104 Q182 108 226 138" fill="none" className="ridge" />
+      {/* eye slit following the curve of the visor */}
+      <path d="M132 112 Q172 110 208 126 L205 133 Q170 120 133 121 Z" className="slit" />
+      {/* breathing holes */}
       {holes.map(([x, y]) => (
-        <circle key={`${x}-${y}`} cx={x} cy={y} r={3} className="slit" />
+        <circle key={`${x}-${y}`} cx={x} cy={y} r={2.6} className="slit" />
+      ))}
+
+      {/* hinge rivet on the temple, where the visor pivots */}
+      <circle cx="112" cy="128" r="8" />
+      <circle cx="112" cy="128" r="2.6" className="slit" />
+      {/* rivets along the brow */}
+      {[70, 86, 156, 172].map((x) => (
+        <circle key={x} cx={x} cy={x < 100 ? 168 : 100 + (x - 156) * 0.4} r={2} />
       ))}
     </svg>
   )

@@ -7,5 +7,8 @@ export default defineConfig({
   build: {
     // three.js lives in its own lazily loaded chunk (~570 kB raw), which is fine.
     chunkSizeWarningLimit: 650,
+    // Sounds are fetch()ed, and the CSP only allows fetching from our own origin,
+    // so tiny MP3s must stay real files instead of being inlined as data: URLs.
+    assetsInlineLimit: (file) => (file.endsWith('.mp3') ? false : undefined),
   },
 })

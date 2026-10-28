@@ -11,7 +11,7 @@ type Module = { input?: AudioNode; output?: AudioNode }
 const TICK_MS = 25
 const SCHEDULE_AHEAD = 0.12 // seconds
 
-function impulse(ctx: AudioContext, seconds: number) {
+function impulse(ctx: BaseAudioContext, seconds: number) {
   const length = ctx.sampleRate * seconds
   const buffer = ctx.createBuffer(2, length, ctx.sampleRate)
   for (let ch = 0; ch < 2; ch++) {
@@ -35,8 +35,9 @@ function crushCurve(bits: number) {
 // A look-ahead step sequencer: a JS timer wakes up often and schedules every
 // step that falls within the next SCHEDULE_AHEAD seconds on the audio clock.
 // The pattern is read at schedule time, so edits are heard on the next pass.
+// Given an OfflineAudioContext instead, the same graph renders to a file (see export.ts).
 export class Engine {
-  readonly ctx = new AudioContext()
+  readonly ctx: BaseAudioContext
   readonly analyser: AnalyserNode
   private readonly out: Out
   private timer = 0
@@ -52,8 +53,8 @@ export class Engine {
   private readonly wobbleDepth: GainNode
   private crushBits = 0
 
-  constructor({ fx, cables }: RackState) {
-    const { ctx } = this
+  constructor({ fx, cables }: RackState, ctx: BaseAudioContext = new AudioContext()) {
+    this.ctx = ctx
     const bus = ctx.createGain() // everything the instruments play
     bus.gain.value = 0.8
 
@@ -144,8 +145,13 @@ export class Engine {
     }
   }
 
+  // Browsers start live audio suspended until a user gesture.
+  private wake() {
+    if (this.ctx instanceof AudioContext) void this.ctx.resume()
+  }
+
   play(read: () => Live) {
-    void this.ctx.resume()
+    this.wake()
     this.stop()
     this.step = 0
     this.nextTime = this.ctx.currentTime + 0.06
@@ -160,7 +166,7 @@ export class Engine {
 
   // Plays one track right now; used to preview a cell when it is switched on.
   trigger(trackIndex: number, song: Song, settings: Settings, bar = 0) {
-    void this.ctx.resume()
+    this.wake()
     tracks[trackIndex].play(this.out, this.ctx.currentTime + 0.01, { song, bar, ...this.timing(settings) })
   }
 
@@ -174,16 +180,23 @@ export class Engine {
 
   dispose() {
     this.stop()
-    void this.ctx.close()
+    if (this.ctx instanceof AudioContext) void this.ctx.close()
+  }
+
+  // Offline rendering: schedule every step from the start up to `seconds` at once.
+  scheduleAll(live: Live, seconds: number) {
+    this.step = 0
+    this.nextTime = 0.05
+    this.schedule(live, seconds)
   }
 
   private timing({ bpm, rate }: Settings) {
     return { rate, stepDur: 60 / (bpm * rate) / 4 }
   }
 
-  private schedule({ song, pattern, settings }: Live) {
+  private schedule({ song, pattern, settings }: Live, until = this.ctx.currentTime + SCHEDULE_AHEAD) {
     const timing = this.timing(settings)
-    while (this.nextTime < this.ctx.currentTime + SCHEDULE_AHEAD) {
+    while (this.nextTime < until) {
       const col = this.step % STEPS
       const bar = Math.floor(this.step / STEPS) % song.chords.length
       tracks.forEach((track, i) => {

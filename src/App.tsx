@@ -6,6 +6,7 @@ import { DesktopIcon } from './components/DesktopIcon'
 import { Taskbar } from './components/Taskbar'
 import { Wallpaper } from './components/Wallpaper'
 import { Portrait } from './components/Portrait'
+import { DungeonDecor } from './components/DungeonDecor'
 import { appIcon, appLabel, appTitle, useTheme } from './themes'
 
 type Windows = Partial<Record<AppId, WinState>>
@@ -28,10 +29,12 @@ function spawn(id: AppId, index: number, z: number, centered = false): WinState 
 function App() {
   const theme = useTheme()
   const zRef = useRef(2)
-  // The sequencer is the "home page"; About opens from the portrait sticker or its icon.
-  const [wins, setWins] = useState<Windows>(() => ({
-    sequencer: spawn('sequencer', 0, 2, true),
-  }))
+  // On desktop the sequencer is the "home page"; on phones windows are full-screen,
+  // so the home screen (title, icons, portrait) shows first and nothing auto-opens.
+  // About opens from the portrait sticker or its icon.
+  const [wins, setWins] = useState<Windows>(() =>
+    window.innerWidth < 640 ? {} : { sequencer: spawn('sequencer', 0, 2, true) },
+  )
   const [selectedIcon, setSelectedIcon] = useState<AppId | null>(null)
   const [shutDown, setShutDown] = useState(false)
   const openIds = Object.keys(wins) as AppId[]
@@ -95,6 +98,7 @@ function App() {
     <>
       <Wallpaper />
       <main className="desktop" onClick={() => setSelectedIcon(null)}>
+        <DungeonDecor />
         {(['left', 'right'] as const).map((side) => (
           <div key={side} className={`desktop-icons ${side}`}>
             {apps

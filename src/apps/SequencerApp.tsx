@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Engine, type Live } from '../audio/engine'
+import { download, renderLoop, toMp3, toWav } from '../audio/export'
 import { rack } from '../audio/rack'
 import { STEPS, emptyPattern, tracks, type Song } from '../audio/song'
 import { useTheme } from '../themes'
@@ -16,6 +17,7 @@ export function SequencerApp() {
   const [bpm, setBpm] = useState(song.bpm)
   const [rate, setRate] = useState(song.rate)
   const [playing, setPlaying] = useState(false)
+  const [exporting, setExporting] = useState<'mp3' | 'wav' | null>(null)
   const [position, setPosition] = useState<number | null>(null)
   const engineRef = useRef<Engine | null>(null)
   const scopeRef = useRef<HTMLCanvasElement>(null)
@@ -97,6 +99,18 @@ export function SequencerApp() {
 
   const col = position === null ? null : position % STEPS
   const bar = position === null ? 0 : Math.floor(position / STEPS) % song.chords.length
+
+  // Renders about a minute of the current loop (with the FX rack) and downloads it.
+  async function exportLoop(format: 'mp3' | 'wav') {
+    setExporting(format)
+    try {
+      const buffer = await renderLoop(live.current, rack.get())
+      const blob = format === 'mp3' ? await toMp3(buffer) : toWav(buffer)
+      download(blob, `${song.title.replace(/[^\w\- ]+/g, '').trim() || 'loop'}.${format}`)
+    } finally {
+      setExporting(null)
+    }
+  }
 
   function toggleCell(trackIndex: number, step: number) {
     const on = !pattern[trackIndex][step]
@@ -180,6 +194,20 @@ export function SequencerApp() {
 
       <div className="seq-footer">
         <span className="muted small">click the blocks — changes play on the next loop ♪</span>
+        <span className="seq-export" aria-live="polite">
+          {exporting ? (
+            <span className="small">rendering {exporting}…</span>
+          ) : (
+            <>
+              <button type="button" className="button" onClick={() => exportLoop('mp3')} title="Download ~1 min as MP3">
+                ⬇ mp3
+              </button>{' '}
+              <button type="button" className="button" onClick={() => exportLoop('wav')} title="Download ~1 min as WAV">
+                ⬇ wav
+              </button>
+            </>
+          )}
+        </span>
         <span>
           <button type="button" className="button" onClick={() => openApp('rack')}>
             ⚡ FX Rack

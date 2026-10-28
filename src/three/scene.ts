@@ -193,6 +193,9 @@ export function startScene(canvas: HTMLCanvasElement, { isBackground, cursorHost
         s.y = -((rect.bottom / h) * 2 - 1) + s.size
       }
       s.obj.position.set(s.x * halfW, s.y * halfH, 0)
+      // On tall, narrow screens (portrait tablets) the floor row would run into the
+      // portrait and the bust, so only the middle pyramid stays.
+      if (s.y < -0.75) s.obj.visible = camera.aspect >= 1.25 || s.x === 0
     }
   }
 
@@ -211,7 +214,7 @@ export function startScene(canvas: HTMLCanvasElement, { isBackground, cursorHost
     const rect = canvas.getBoundingClientRect()
     pointer.set(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1)
     raycaster.setFromCamera(pointer, camera)
-    const roots = [...spinners.map((s) => s.obj), ...dolphins.map((d) => d.obj)]
+    const roots = [...spinners.map((s) => s.obj), ...dolphins.map((d) => d.obj)].filter((o) => o.visible)
     const hit = raycaster.intersectObjects(roots, true)[0]
     let obj: THREE.Object3D | null = hit?.object ?? null
     while (obj && !roots.includes(obj)) obj = obj.parent
