@@ -4,82 +4,152 @@ export const STEPS = 16
 
 const hz = (midi: number) => 440 * 2 ** ((midi - 69) / 12)
 
-// Original four-bar progression; the chord changes every bar.
-export const chords = [
-  { name: 'Fmaj7', notes: [53, 57, 60, 64], root: 41 },
-  { name: 'Em7', notes: [52, 55, 59, 62], root: 40 },
-  { name: 'Dm9', notes: [50, 53, 57, 60, 64], root: 38 },
-  { name: 'Cmaj9', notes: [48, 52, 55, 59, 62], root: 36 },
-]
+export type Chord = { name: string; notes: number[]; root: number }
+export type Pattern = boolean[][]
+
+// A song is a preset for the sequencer: a four-bar progression (one chord per bar),
+// the seven notes on the melody rows, a starting pattern and a tempo.
+export type Song = {
+  id: string
+  title: string
+  bpm: number
+  rate: number // "slowed" factor: scales both tempo and pitch, like a slowed-down record (0.72 ≈ -6 semitones)
+  chords: Chord[]
+  melody: [string, number][] // top row first; a pentatonic that fits every chord, so any melody sounds fine
+  pattern: Pattern
+}
 
 export type PlayContext = {
+  song: Song
   bar: number
-  rate: number // "slowed" factor: scales both tempo and pitch, like a slowed-down record (0.72 ≈ -6 semitones)
+  rate: number
   stepDur: number
 }
 
 export type Track = {
   id: string
-  label: string
+  label: (song: Song) => string
   group: 'melody' | 'harmony' | 'drums'
   play: (o: Out, t: number, p: PlayContext) => void
 }
 
-// C major pentatonic fits every chord above, so any melody you draw sounds fine.
-const melodyNotes: [string, number][] = [
-  ['A5', 81],
-  ['G5', 79],
-  ['E5', 76],
-  ['D5', 74],
-  ['C5', 72],
-  ['A4', 69],
-  ['G4', 67],
-]
+const MELODY_ROWS = 7
 
 export const tracks: Track[] = [
-  ...melodyNotes.map(
-    ([label, note]): Track => ({
-      id: label,
-      label,
+  ...Array.from(
+    { length: MELODY_ROWS },
+    (_, i): Track => ({
+      id: `melody-${i}`,
+      label: (song) => song.melody[i][0],
       group: 'melody',
-      play: (o, t, p) => lead(o, t, hz(note) * p.rate, p.stepDur * 4),
+      play: (o, t, p) => lead(o, t, hz(p.song.melody[i][1]) * p.rate, p.stepDur * 4),
     }),
   ),
   {
     id: 'chords',
-    label: 'chords',
+    label: () => 'chords',
     group: 'harmony',
-    play: (o, t, p) => keys(o, t, chords[p.bar].notes.map((n) => hz(n) * p.rate), p.stepDur * 9),
+    play: (o, t, p) => keys(o, t, p.song.chords[p.bar].notes.map((n) => hz(n) * p.rate), p.stepDur * 9),
   },
   {
     id: 'bass',
-    label: 'bass',
+    label: () => 'bass',
     group: 'harmony',
-    play: (o, t, p) => bass(o, t, hz(chords[p.bar].root) * p.rate, p.stepDur * 2.5),
+    play: (o, t, p) => bass(o, t, hz(p.song.chords[p.bar].root) * p.rate, p.stepDur * 2.5),
   },
-  { id: 'kick', label: 'kick', group: 'drums', play: (o, t, p) => kick(o, t, p.rate) },
-  { id: 'snare', label: 'snare', group: 'drums', play: (o, t, p) => snare(o, t, p.rate) },
-  { id: 'hat', label: 'hat', group: 'drums', play: (o, t, p) => hat(o, t, p.rate) },
+  { id: 'kick', label: () => 'kick', group: 'drums', play: (o, t, p) => kick(o, t, p.rate) },
+  { id: 'snare', label: () => 'snare', group: 'drums', play: (o, t, p) => snare(o, t, p.rate) },
+  { id: 'hat', label: () => 'hat', group: 'drums', play: (o, t, p) => hat(o, t, p.rate) },
 ]
-
-export type Pattern = boolean[][]
 
 const row = (steps: string) => [...steps].map((c) => c === 'x')
 
-// One row per track, in the same order as `tracks`.
-export const defaultPattern: Pattern = [
-  row('......x.........'), // A5
-  row('...x......x.....'), // G5
-  row('x...........x...'), // E5
-  row('..............x.'), // D5
-  row('................'), // C5
-  row('................'), // A4
-  row('................'), // G4
-  row('x.........x.....'), // chords
-  row('x..x....x.x.....'), // bass
-  row('x.........x.....'), // kick
-  row('....x.......x...'), // snare
-  row('..x...x...x...x.'), // hat
+// Patterns list one row per track, in the same order as `tracks`.
+export const songs: Song[] = [
+  {
+    id: 'night-stockholm',
+    title: 'Stockholm.exe Has Stopped Responding',
+    bpm: 72,
+    rate: 0.72,
+    chords: [
+      { name: 'Fmaj7', notes: [53, 57, 60, 64], root: 41 },
+      { name: 'Em7', notes: [52, 55, 59, 62], root: 40 },
+      { name: 'Dm9', notes: [50, 53, 57, 60, 64], root: 38 },
+      { name: 'Cmaj9', notes: [48, 52, 55, 59, 62], root: 36 },
+    ],
+    // C major pentatonic
+    melody: [['A5', 81], ['G5', 79], ['E5', 76], ['D5', 74], ['C5', 72], ['A4', 69], ['G4', 67]],
+    pattern: [
+      row('......x.........'),
+      row('...x......x.....'),
+      row('x...........x...'),
+      row('..............x.'),
+      row('................'),
+      row('................'),
+      row('................'),
+      row('x.........x.....'), // chords
+      row('x..x....x.x.....'), // bass
+      row('x.........x.....'), // kick
+      row('....x.......x...'), // snare
+      row('..x...x...x...x.'), // hat
+    ],
+  },
+  {
+    id: 'evening-solna',
+    title: 'Solna Mall Escalator Muzak',
+    bpm: 80,
+    rate: 0.78,
+    chords: [
+      { name: 'Abmaj7', notes: [56, 60, 63, 67], root: 44 },
+      { name: 'Gm7', notes: [55, 58, 62, 65], root: 43 },
+      { name: 'Cm9', notes: [48, 51, 55, 58, 62], root: 36 },
+      { name: 'Fm9', notes: [53, 56, 60, 63, 67], root: 41 },
+    ],
+    // Eb major pentatonic
+    melody: [['Bb5', 82], ['G5', 79], ['F5', 77], ['Eb5', 75], ['C5', 72], ['Bb4', 70], ['G4', 67]],
+    pattern: [
+      row('..........x.....'),
+      row('....x.......x...'),
+      row('..x.............'),
+      row('x.......x.......'),
+      row('..............x.'),
+      row('................'),
+      row('................'),
+      row('x.....x...x.....'), // chords
+      row('x.....x...x..x..'), // bass
+      row('x.....x...x.....'), // kick
+      row('....x.......x...'), // snare
+      row('x.x.x.x.x.x.x.x.'), // hat
+    ],
+  },
+  {
+    id: 'sleepy-kista',
+    title: 'Kista Dial-Up Lullaby',
+    bpm: 64,
+    rate: 0.68,
+    chords: [
+      { name: 'Am9', notes: [57, 60, 64, 67, 71], root: 45 },
+      { name: 'Fmaj7', notes: [53, 57, 60, 64], root: 41 },
+      { name: 'Dm9', notes: [50, 53, 57, 60, 64], root: 38 },
+      { name: 'Esus4', notes: [52, 57, 59, 64], root: 40 },
+    ],
+    // A minor pentatonic
+    melody: [['A5', 81], ['G5', 79], ['E5', 76], ['D5', 74], ['C5', 72], ['A4', 69], ['G4', 67]],
+    pattern: [
+      row('........x.......'),
+      row('................'),
+      row('x...........x...'),
+      row('......x.........'),
+      row('...x............'),
+      row('..............x.'),
+      row('................'),
+      row('x.......x.......'), // chords
+      row('x.......x.......'), // bass
+      row('x...............'), // kick
+      row('........x.......'), // snare
+      row('....x.......x...'), // hat
+    ],
+  },
 ]
 
 export const emptyPattern = (): Pattern => tracks.map(() => Array<boolean>(STEPS).fill(false))

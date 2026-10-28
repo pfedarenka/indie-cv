@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { apps, appById, type AppId } from './apps/registry'
+import { OPEN_APP_EVENT } from './apps/openApp'
 import { Window, type WinState } from './components/Window'
 import { DesktopIcon } from './components/DesktopIcon'
 import { Taskbar } from './components/Taskbar'
@@ -48,6 +49,17 @@ function App() {
       [id]: prev[id] ? { ...prev[id], z, minimized: false } : spawn(id, Object.keys(prev).length, z),
     }))
   }
+
+  // Apps can ask to open other apps (see apps/openApp.ts).
+  const openRef = useRef(open)
+  useEffect(() => {
+    openRef.current = open
+  })
+  useEffect(() => {
+    const onOpen = (e: Event) => openRef.current((e as CustomEvent<AppId>).detail)
+    window.addEventListener(OPEN_APP_EVENT, onOpen)
+    return () => window.removeEventListener(OPEN_APP_EVENT, onOpen)
+  }, [])
 
   function focus(id: AppId) {
     if (id !== activeId) update(id, { z: ++zRef.current })

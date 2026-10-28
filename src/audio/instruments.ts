@@ -4,7 +4,6 @@
 export type Out = {
   ctx: AudioContext
   dest: AudioNode
-  wobble: AudioNode // slow LFO in cents, connected to oscillator detune for the "tape" feel
 }
 
 const noiseBuffers = new WeakMap<BaseAudioContext, AudioBuffer>()
@@ -33,10 +32,8 @@ function osc(o: Out, type: OscillatorType, freq: number, t: number, end: number,
   node.type = type
   node.frequency.setValueAtTime(freq, t)
   node.detune.value = detune
-  o.wobble.connect(node.detune)
   node.start(t)
   node.stop(end)
-  node.onended = () => o.wobble.disconnect(node.detune)
   return node
 }
 

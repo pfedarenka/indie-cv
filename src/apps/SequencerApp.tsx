@@ -1,36 +1,48 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
-import { DEFAULT_FX, Engine, type Fx, type Live } from '../audio/engine'
-import { STEPS, chords, defaultPattern, emptyPattern, tracks } from '../audio/song'
+import { Engine, type Live } from '../audio/engine'
+import { rack } from '../audio/rack'
+import { STEPS, emptyPattern, songs, tracks, type Song } from '../audio/song'
+import { openApp } from './openApp'
 
 const columns = Array.from({ length: STEPS }, (_, i) => i)
-const DEFAULT_BPM = 72
-const DEFAULT_RATE = 0.72
-const FX_KNOBS: { key: keyof Fx; label: string }[] = [
-  { key: 'filter', label: 'filter' },
-  { key: 'echo', label: 'echo' },
-  { key: 'space', label: 'space' },
-  { key: 'wobble', label: 'wobble' },
-]
 
 export function SequencerApp() {
-  const [pattern, setPattern] = useState(defaultPattern)
-  const [bpm, setBpm] = useState(DEFAULT_BPM)
-  const [rate, setRate] = useState(DEFAULT_RATE)
-  const [fx, setFx] = useState(DEFAULT_FX)
+  const [song, setSong] = useState(songs[0])
+  const [pattern, setPattern] = useState(song.pattern)
+  const [bpm, setBpm] = useState(song.bpm)
+  const [rate, setRate] = useState(song.rate)
   const [playing, setPlaying] = useState(false)
   const [position, setPosition] = useState<number | null>(null)
   const engineRef = useRef<Engine | null>(null)
   const scopeRef = useRef<HTMLCanvasElement>(null)
   // The scheduler reads this on every tick, so edits apply without restarting.
-  const live = useRef<Live>({ pattern, settings: { bpm, rate } })
+  const live = useRef<Live>({ song, pattern, settings: { bpm, rate } })
 
   useEffect(() => {
-    live.current = { pattern, settings: { bpm, rate } }
-  }, [pattern, bpm, rate])
+    live.current = { song, pattern, settings: { bpm, rate } }
+  }, [song, pattern, bpm, rate])
 
+  // Picking a song (or Reset) loads its notes, starting pattern and tempo.
+  function load(next: Song) {
+    setSong(next)
+    setPattern(next.pattern)
+    setBpm(next.bpm)
+    setRate(next.rate)
+  }
+
+  // Knob turns and re-patched cables in the FX rack window reach the engine live.
   useEffect(() => {
-    engineRef.current?.setFx(fx)
-  }, [fx])
+    let cables = rack.get().cables
+    return rack.subscribe(() => {
+      const engine = engineRef.current
+      const state = rack.get()
+      if (engine) {
+        engine.setFx(state.fx)
+        if (state.cables !== cables) engine.setPatch(state.cables)
+      }
+      cables = state.cables
+    })
+  }, [])
 
   // Closing the window unmounts the app: stop the music and free the audio device.
   useEffect(() => () => engineRef.current?.dispose(), [])
@@ -65,7 +77,7 @@ export function SequencerApp() {
   }, [playing])
 
   function engine() {
-    engineRef.current ??= new Engine(fx)
+    engineRef.current ??= new Engine(rack.get())
     return engineRef.current
   }
 
@@ -80,16 +92,31 @@ export function SequencerApp() {
   }
 
   const col = position === null ? null : position % STEPS
-  const bar = position === null ? 0 : Math.floor(position / STEPS) % chords.length
+  const bar = position === null ? 0 : Math.floor(position / STEPS) % song.chords.length
 
   function toggleCell(trackIndex: number, step: number) {
     const on = !pattern[trackIndex][step]
     setPattern(pattern.map((r, i) => (i === trackIndex ? r.map((v, j) => (j === step ? on : v)) : r)))
-    if (on && !playing) engine().trigger(trackIndex, { bpm, rate }, bar)
+    if (on && !playing) engine().trigger(trackIndex, song, { bpm, rate }, bar)
   }
 
   return (
     <div className="seq">
+      <label className="seq-song">
+        <span>♫ track</span>
+        <select
+          className="sunken"
+          value={song.id}
+          onChange={(e) => load(songs.find((s) => s.id === e.target.value)!)}
+        >
+          {songs.map((s, i) => (
+            <option key={s.id} value={s.id}>
+              {i + 1}. {s.title}
+            </option>
+          ))}
+        </select>
+      </label>
+
       <div className="seq-transport">
         <button type="button" className={`button seq-play${playing ? ' pressed' : ''}`} onClick={togglePlay}>
           {playing ? '■ Stop' : '▶ Play'}
@@ -111,11 +138,11 @@ export function SequencerApp() {
         </label>
         <div className="seq-lcd sunken">
           <div className="seq-bars">
-            {chords.map((chord, i) => (
+            {song.chords.map((chord, i) => (
               <span key={chord.name} className={playing && i === bar ? 'lit' : ''} />
             ))}
           </div>
-          <b>{chords[bar].name}</b>
+          <b>{song.chords[bar].name}</b>
         </div>
         <canvas ref={scopeRef} className="seq-scope sunken" width={160} height={44} />
       </div>
@@ -124,12 +151,12 @@ export function SequencerApp() {
         {tracks.map((track, i) => (
           <Fragment key={track.id}>
             {i > 0 && track.group !== tracks[i - 1].group && <div className="seq-gap" />}
-            <span className="seq-label">{track.label}</span>
+            <span className="seq-label">{track.label(song)}</span>
             {columns.map((step) => (
               <button
                 key={step}
                 type="button"
-                aria-label={`${track.label} step ${step + 1}`}
+                aria-label={`${track.label(song)} step ${step + 1}`}
                 aria-pressed={pattern[i][step]}
                 className={[
                   'seq-cell',
@@ -147,40 +174,19 @@ export function SequencerApp() {
         ))}
       </div>
 
-      <fieldset className="group seq-fx">
-        <legend>FX</legend>
-        {FX_KNOBS.map(({ key, label }) => (
-          <label key={key} className="seq-knob">
-            <span>
-              {label} {Math.round(fx[key] * 100)}
-            </span>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.01}
-              value={fx[key]}
-              onChange={(e) => setFx({ ...fx, [key]: +e.target.value })}
-            />
-          </label>
-        ))}
-      </fieldset>
-
       <div className="seq-footer">
         <span className="muted small">click the blocks — changes play on the next loop ♪</span>
         <span>
+          <button type="button" className="button" onClick={() => openApp('rack')}>
+            ⚡ FX Rack
+          </button>{' '}
           <button type="button" className="button" onClick={() => setPattern(emptyPattern())}>
             Clear
           </button>{' '}
           <button
             type="button"
             className="button"
-            onClick={() => {
-              setPattern(defaultPattern)
-              setBpm(DEFAULT_BPM)
-              setRate(DEFAULT_RATE)
-              setFx(DEFAULT_FX)
-            }}
+            onClick={() => load(song)}
           >
             Reset
           </button>

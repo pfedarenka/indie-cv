@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-export type IconName = 'computer' | 'document' | 'globe' | 'guestbook' | 'trash' | 'logo' | 'music' | 'column'
+export type IconName = 'computer' | 'document' | 'globe' | 'guestbook' | 'trash' | 'logo' | 'music' | 'column' | 'rack'
 
 // 32x32 pixel-ish icons, drawn with crisp edges so they look like old system icons.
 const icons: Record<IconName, ReactNode> = {
@@ -16,6 +16,16 @@ const icons: Record<IconName, ReactNode> = {
       <rect x="12.5" y="21.5" width="7" height="3" fill="#a0a0a0" stroke="#000" />
       <rect x="5.5" y="24.5" width="21" height="4" fill="#c0c0c0" stroke="#000" />
       <rect x="20" y="26" width="4" height="1" fill="#05ffa1" />
+    </>
+  ),
+  rack: (
+    <>
+      <rect x="2.5" y="6.5" width="27" height="19" fill="#2a0845" stroke="#000" />
+      <circle cx="8" cy="12" r="2.5" fill="#c0c0c0" stroke="#000" />
+      <circle cx="16" cy="12" r="2.5" fill="#c0c0c0" stroke="#000" />
+      <circle cx="24" cy="12" r="2.5" fill="#c0c0c0" stroke="#000" />
+      <path d="M8 20c2 6 6 6 8 0" fill="none" stroke="#ff71ce" strokeWidth="2" />
+      <path d="M16 20c2 6 6 6 8 0" fill="none" stroke="#01cdfe" strokeWidth="2" />
     </>
   ),
   column: (

@@ -675,6 +675,23 @@ h3 {
   overflow: auto;
 }
 
+.seq-song {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.seq-song select {
+  flex: 1;
+  max-width: 320px;
+  padding: 2px 4px;
+  border: 0;
+  background: #fff;
+  font: inherit;
+  font-weight: 400;
+}
+
 .seq-transport {
   display: flex;
   flex-wrap: wrap;
@@ -797,16 +814,180 @@ h3 {
   outline: 1px dotted #fff;
 }
 
-.seq-fx {
+/* ───────────── FX rack ───────────── */
+.rack {
+  flex: 1;
+  min-height: 0;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 6px 12px;
-  margin: 0;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px;
 }
 
-.seq-fx input {
-  accent-color: var(--neon-cyan);
+.rack-board {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
+  align-content: center;
+  gap: 34px 36px;
+  padding: 20px 28px 48px;
+  overflow: auto;
+  background: #0d0221 radial-gradient(circle at 50% 0%, #3b0a6b, transparent 70%);
+  touch-action: none;
+}
+
+.rack-module {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px 8px;
+  background: var(--face);
+  box-shadow: var(--raised);
+}
+
+.rack-seq,
+.rack-out {
+  background: linear-gradient(#e7dcf2, #c0c0c0);
+}
+
+.rack-module-title {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.rack-module-hint {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.rack-knob {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+}
+
+.rack-knob input {
+  min-width: 0;
+  flex: 1;
+  accent-color: #ff2fb9;
+}
+
+/* patch jacks: inputs on the left edge, outputs on the right */
+.jack {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  translate: 0 -50%;
+  border: 3px solid #8a8a8a;
+  border-radius: 50%;
+  background: radial-gradient(circle, #000 45%, #333 46%);
+  box-shadow: 0 0 0 1px #000;
+}
+
+.jack.in {
+  left: -10px;
+}
+
+.jack.out {
+  right: -10px;
+  cursor: crosshair;
+}
+
+.jack.plugged {
+  border-color: #e8e8e8;
+  box-shadow: 0 0 0 1px #000, 0 0 8px var(--neon-pink);
+}
+
+.jack.in.plugged {
+  cursor: grab;
+}
+
+.rack-board.patching,
+.rack-board.patching .jack {
+  cursor: grabbing;
+}
+
+/* while a cable is in hand: where it can go, and where it can't */
+.jack.target {
+  border-color: var(--neon-green);
+  box-shadow: 0 0 0 1px #000, 0 0 10px var(--neon-green);
+  animation: jack-pulse 0.8s ease-in-out infinite alternate;
+}
+
+.jack.target.hover {
+  scale: 1.35;
+  animation: none;
+  box-shadow: 0 0 0 1px #000, 0 0 16px var(--neon-green), 0 0 4px #fff;
+}
+
+.jack.blocked {
+  opacity: 0.3;
+}
+
+@keyframes jack-pulse {
+  to {
+    box-shadow: 0 0 0 1px #000, 0 0 2px var(--neon-green);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jack.target {
+    animation: none;
+  }
+}
+
+.jack.out:focus-visible {
+  outline: 2px dotted #fff;
+  outline-offset: 2px;
+}
+
+.rack-cables {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.cable {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 3px 2px #0009);
+}
+
+.cable.dragging {
+  stroke-dasharray: 6 5;
+}
+
+.cable-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.rack-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+@media (max-width: 639px) {
+  .rack-board {
+    grid-template-columns: repeat(2, minmax(110px, 1fr));
+    align-content: start;
+  }
 }
 
 .seq-footer {
