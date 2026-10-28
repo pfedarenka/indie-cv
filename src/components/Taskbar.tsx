@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { apps, appById, type AppId } from '../apps/registry'
+import { appIcon, appLabel, appTitle, useTheme } from '../themes'
 import { Icon } from './Icon'
 import { LoadStatus } from './LoadStatus'
+import { ThemePicker } from './ThemePicker'
 
 type Props = {
   openIds: AppId[]
@@ -12,6 +14,7 @@ type Props = {
 }
 
 export function Taskbar({ openIds, activeId, onTaskClick, onOpen, onShutdown }: Props) {
+  const theme = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const startRef = useRef<HTMLDivElement>(null)
@@ -50,14 +53,15 @@ export function Taskbar({ openIds, activeId, onTaskClick, onOpen, onShutdown }: 
         {menuOpen && (
           <nav className="start-menu">
             <div className="start-menu-banner">
-              ｐａｖｅｌ<b>９８</b>
+              {theme.startBanner[0]}
+              <b>{theme.startBanner[1]}</b>
             </div>
             <ul>
               {apps.map((app) => (
                 <li key={app.id}>
                   <button type="button" onClick={() => launch(app.id)}>
-                    <Icon name={app.icon} size={24} />
-                    {app.label}
+                    <Icon name={appIcon(app, theme)} size={24} />
+                    {appLabel(app, theme)}
                   </button>
                 </li>
               ))}
@@ -87,13 +91,14 @@ export function Taskbar({ openIds, activeId, onTaskClick, onOpen, onShutdown }: 
             className={`task${id === activeId ? ' pressed' : ''}`}
             onClick={() => onTaskClick(id)}
           >
-            <Icon name={appById[id].icon} size={16} />
-            <span>{appById[id].title}</span>
+            <Icon name={appIcon(appById[id], theme)} size={16} />
+            <span>{appTitle(appById[id], theme)}</span>
           </button>
         ))}
       </div>
 
       <LoadStatus />
+      <ThemePicker />
       <div className="tray">
         <time dateTime={now.toISOString()}>
           {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

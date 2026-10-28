@@ -1,12 +1,16 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Engine, type Live } from '../audio/engine'
 import { rack } from '../audio/rack'
-import { STEPS, emptyPattern, songs, tracks, type Song } from '../audio/song'
+import { STEPS, emptyPattern, tracks, type Song } from '../audio/song'
+import { useTheme } from '../themes'
 import { openApp } from './openApp'
 
 const columns = Array.from({ length: STEPS }, (_, i) => i)
 
+// The track list comes from the current theme; switching themes remounts this app
+// (see App.tsx), so it starts fresh with the new theme's first track.
 export function SequencerApp() {
+  const { songs } = useTheme()
   const [song, setSong] = useState(songs[0])
   const [pattern, setPattern] = useState(song.pattern)
   const [bpm, setBpm] = useState(song.bpm)
@@ -139,7 +143,7 @@ export function SequencerApp() {
         <div className="seq-lcd sunken">
           <div className="seq-bars">
             {song.chords.map((chord, i) => (
-              <span key={chord.name} className={playing && i === bar ? 'lit' : ''} />
+              <span key={i} title={chord.name} className={playing && i === bar ? 'lit' : ''} />
             ))}
           </div>
           <b>{song.chords[bar].name}</b>

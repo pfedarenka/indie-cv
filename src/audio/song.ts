@@ -1,4 +1,4 @@
-import { bass, hat, keys, kick, lead, snare, type Out } from './instruments'
+import { bass, bell, drone, flute, frameDrum, hat, keys, kick, lead, organ, snare, timpani, type Out } from './instruments'
 
 export const STEPS = 16
 
@@ -12,6 +12,7 @@ export type Pattern = boolean[][]
 export type Song = {
   id: string
   title: string
+  style: 'vapor' | 'dungeon' // which instrument set plays the rows
   bpm: number
   rate: number // "slowed" factor: scales both tempo and pitch, like a slowed-down record (0.72 ≈ -6 semitones)
   chords: Chord[]
@@ -34,7 +35,11 @@ export type Track = {
 }
 
 const MELODY_ROWS = 7
+const dungeon = (p: PlayContext) => p.song.style === 'dungeon'
+const chordHz = (p: PlayContext) => p.song.chords[p.bar].notes.map((n) => hz(n) * p.rate)
+const rootHz = (p: PlayContext, octaves = 0) => hz(p.song.chords[p.bar].root + 12 * octaves) * p.rate
 
+// The same twelve rows for every song; the song's style picks the instrument on each row.
 export const tracks: Track[] = [
   ...Array.from(
     { length: MELODY_ROWS },
@@ -42,33 +47,53 @@ export const tracks: Track[] = [
       id: `melody-${i}`,
       label: (song) => song.melody[i][0],
       group: 'melody',
-      play: (o, t, p) => lead(o, t, hz(p.song.melody[i][1]) * p.rate, p.stepDur * 4),
+      play: (o, t, p) => {
+        const freq = hz(p.song.melody[i][1]) * p.rate
+        if (dungeon(p)) flute(o, t, freq, p.stepDur * 5)
+        else lead(o, t, freq, p.stepDur * 4)
+      },
     }),
   ),
   {
     id: 'chords',
-    label: () => 'chords',
+    label: (song) => (song.style === 'dungeon' ? 'organ' : 'chords'),
     group: 'harmony',
-    play: (o, t, p) => keys(o, t, p.song.chords[p.bar].notes.map((n) => hz(n) * p.rate), p.stepDur * 9),
+    play: (o, t, p) => (dungeon(p) ? organ(o, t, chordHz(p), p.stepDur * 15) : keys(o, t, chordHz(p), p.stepDur * 9)),
   },
   {
     id: 'bass',
-    label: () => 'bass',
+    label: (song) => (song.style === 'dungeon' ? 'drone' : 'bass'),
     group: 'harmony',
-    play: (o, t, p) => bass(o, t, hz(p.song.chords[p.bar].root) * p.rate, p.stepDur * 2.5),
+    play: (o, t, p) => (dungeon(p) ? drone(o, t, rootHz(p), p.stepDur * 15) : bass(o, t, rootHz(p), p.stepDur * 2.5)),
   },
-  { id: 'kick', label: () => 'kick', group: 'drums', play: (o, t, p) => kick(o, t, p.rate) },
-  { id: 'snare', label: () => 'snare', group: 'drums', play: (o, t, p) => snare(o, t, p.rate) },
-  { id: 'hat', label: () => 'hat', group: 'drums', play: (o, t, p) => hat(o, t, p.rate) },
+  {
+    id: 'kick',
+    label: (song) => (song.style === 'dungeon' ? 'timpani' : 'kick'),
+    group: 'drums',
+    play: (o, t, p) => (dungeon(p) ? timpani(o, t, p.rate) : kick(o, t, p.rate)),
+  },
+  {
+    id: 'snare',
+    label: (song) => (song.style === 'dungeon' ? 'drum' : 'snare'),
+    group: 'drums',
+    play: (o, t, p) => (dungeon(p) ? frameDrum(o, t, p.rate) : snare(o, t, p.rate)),
+  },
+  {
+    id: 'hat',
+    label: (song) => (song.style === 'dungeon' ? 'bell' : 'hat'),
+    group: 'drums',
+    play: (o, t, p) => (dungeon(p) ? bell(o, t, rootHz(p, 3)) : hat(o, t, p.rate)),
+  },
 ]
 
-const row = (steps: string) => [...steps].map((c) => c === 'x')
+export const row = (steps: string) => [...steps].map((c) => c === 'x')
 
 // Patterns list one row per track, in the same order as `tracks`.
-export const songs: Song[] = [
+export const vaporSongs: Song[] = [
   {
     id: 'night-stockholm',
     title: 'Stockholm.exe Has Stopped Responding',
+    style: 'vapor',
     bpm: 72,
     rate: 0.72,
     chords: [
@@ -97,6 +122,7 @@ export const songs: Song[] = [
   {
     id: 'evening-solna',
     title: 'Solna Mall Escalator Muzak',
+    style: 'vapor',
     bpm: 80,
     rate: 0.78,
     chords: [
@@ -125,6 +151,7 @@ export const songs: Song[] = [
   {
     id: 'sleepy-kista',
     title: 'Kista Dial-Up Lullaby',
+    style: 'vapor',
     bpm: 64,
     rate: 0.68,
     chords: [

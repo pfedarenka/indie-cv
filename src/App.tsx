@@ -6,6 +6,7 @@ import { DesktopIcon } from './components/DesktopIcon'
 import { Taskbar } from './components/Taskbar'
 import { Wallpaper } from './components/Wallpaper'
 import { Portrait } from './components/Portrait'
+import { appIcon, appLabel, appTitle, useTheme } from './themes'
 
 type Windows = Partial<Record<AppId, WinState>>
 
@@ -25,6 +26,7 @@ function spawn(id: AppId, index: number, z: number, centered = false): WinState 
 }
 
 function App() {
+  const theme = useTheme()
   const zRef = useRef(2)
   // The sequencer is the "home page"; About opens from the portrait sticker or its icon.
   const [wins, setWins] = useState<Windows>(() => ({
@@ -100,8 +102,8 @@ function App() {
               .map((app) => (
                 <DesktopIcon
                   key={app.id}
-                  label={app.label}
-                  icon={app.icon}
+                  label={appLabel(app, theme)}
+                  icon={appIcon(app, theme)}
                   selected={selectedIcon === app.id}
                   onSelect={() => setSelectedIcon(app.id)}
                   onOpen={() => {
@@ -116,13 +118,14 @@ function App() {
         <Portrait onOpen={() => open('about')} />
 
         {openIds.map((id) => {
-          const { title, icon, Component } = appById[id]
+          const app = appById[id]
+          const { Component } = app
           const state = wins[id]!
           return (
             <Window
               key={id}
-              title={title}
-              icon={icon}
+              title={appTitle(app, theme)}
+              icon={appIcon(app, theme)}
               state={state}
               active={id === activeId}
               onFocus={() => focus(id)}
@@ -131,7 +134,8 @@ function App() {
               onToggleMax={() => update(id, { maximized: !state.maximized })}
               onMove={(x, y) => update(id, { x, y })}
             >
-              <Component />
+              {/* remount on theme change so apps pick up theme data (e.g. the track list) */}
+              <Component key={theme.id} />
             </Window>
           )
         })}

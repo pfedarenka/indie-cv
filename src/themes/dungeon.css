@@ -1,0 +1,549 @@
+/* ───────────────────────── Dungeon theme ─────────────────────────
+   Dark and minimal: near-black, bone-white type, a thread of blood red.
+   No 3D, no neon, no bevels; thin lines, old-book serif, blackletter titles.
+   Everything is scoped to :root[data-theme='dungeon'] so the base CSS stays the
+   default (vapor) look. */
+
+:root[data-theme='dungeon'] {
+  --face: #0d0a09;
+  --light: #2b2420;
+  --white: #3a312b;
+  --shadow: #1a1513;
+  --dark: #000;
+  --text: #d9cfbc;
+  --muted: #9a8f80; /* ≥ 4.5:1 on --face */
+  --select: #6e0b10;
+  --link: #c9a26b;
+  --blood: #a3141c;
+  --bone: #d9cfbc;
+  --bone-dim: #d9cfbc40;
+
+  --title-active: none;
+  --title-inactive: none;
+
+  /* bevels become hairlines */
+  --raised: 0 0 0 1px var(--bone-dim);
+  --button: inset 0 0 0 1px var(--bone-dim);
+  --pressed: inset 0 0 0 1px var(--blood);
+  --sunken: inset 0 0 0 1px #2c2420;
+
+  --ui-font: 'IM Fell English', Georgia, 'Times New Roman', serif;
+  --gothic: 'UnifrakturMaguntia', 'IM Fell English', serif;
+
+  color-scheme: dark;
+  font: 14px/1.45 var(--ui-font);
+  color: var(--text);
+  -webkit-font-smoothing: auto;
+}
+
+:root[data-theme='dungeon'] body {
+  background: #050404;
+}
+
+/* ── wallpaper: black void, faint fog, a pale moon and a single horizon line ── */
+:root[data-theme='dungeon'] .wallpaper {
+  background: radial-gradient(ellipse at 50% 40%, #1a1110 0%, #070505 55%, #000 100%);
+}
+
+:root[data-theme='dungeon'] .stars {
+  opacity: 0.18;
+  filter: grayscale(1);
+  animation: none;
+}
+
+:root[data-theme='dungeon'] .sun {
+  --size: min(22vmin, 180px);
+  bottom: calc(40% + 14vh);
+  background: radial-gradient(circle at 40% 35%, #e9e1d0, #b9ad98 60%, #8d8170);
+  box-shadow: 0 0 80px #d9cfbc22;
+  -webkit-mask-image: none;
+  mask-image: none;
+  opacity: 0.55;
+}
+
+:root[data-theme='dungeon'] .floor {
+  background: linear-gradient(#0a0707, #000);
+  border-top: 1px solid var(--bone-dim);
+  box-shadow: 0 -30px 60px #0008;
+  perspective: none;
+}
+
+:root[data-theme='dungeon'] .grid {
+  display: none;
+}
+
+/* two longswords framing the screen, point down */
+:root[data-theme='dungeon'] .wall-sword {
+  position: absolute;
+  top: 2vh;
+  height: calc(100% - var(--taskbar-h) - 4vh);
+  aspect-ratio: 60 / 600;
+  width: auto;
+  fill: #0b0807;
+  stroke: var(--bone);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.75;
+  filter: drop-shadow(0 0 10px #000);
+}
+
+:root[data-theme='dungeon'] .wall-sword * {
+  vector-effect: non-scaling-stroke;
+}
+
+:root[data-theme='dungeon'] .wall-sword.left {
+  left: 8px;
+}
+
+:root[data-theme='dungeon'] .wall-sword.right {
+  right: 8px;
+}
+
+/* the great helm, mirroring the portrait sticker on the right */
+:root[data-theme='dungeon'] .wall-helmet {
+  position: absolute;
+  right: 150px;
+  bottom: calc(var(--taskbar-h) + 2vh);
+  height: min(36vh, 320px);
+  aspect-ratio: 200 / 220;
+  fill: #0b0807;
+  stroke: var(--bone);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 18px #000) drop-shadow(0 0 40px #a3141c22);
+}
+
+:root[data-theme='dungeon'] .wall-helmet * {
+  vector-effect: non-scaling-stroke;
+}
+
+:root[data-theme='dungeon'] .wall-helmet .slit {
+  fill: #000;
+}
+
+:root[data-theme='dungeon'] .wall-helmet .hatch {
+  stroke-width: 1;
+  opacity: 0.45;
+}
+
+@media (max-width: 639px) {
+  :root[data-theme='dungeon'] .wall-sword,
+  :root[data-theme='dungeon'] .wall-helmet {
+    display: none;
+  }
+}
+
+:root[data-theme='dungeon'] .wall-title-main {
+  font: 400 clamp(44px, 7.5vw, 112px) / 1.05 var(--gothic);
+  background: none;
+  color: var(--bone);
+  filter: none;
+  text-shadow: 0 0 30px #00000080;
+}
+
+:root[data-theme='dungeon'] .wall-title-sub {
+  margin-top: 10px;
+  color: var(--blood);
+  font: italic 15px var(--ui-font);
+  letter-spacing: 0.2em;
+  text-shadow: none;
+}
+
+/* film grain instead of CRT scanlines */
+:root[data-theme='dungeon'] .scanlines {
+  opacity: 0.14;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── desktop icons: monochrome, nudged inward past the swords ── */
+@media (min-width: 640px) {
+  :root[data-theme='dungeon'] .desktop-icons.left {
+    left: 84px;
+  }
+
+  :root[data-theme='dungeon'] .desktop-icons.right {
+    right: 84px;
+  }
+}
+
+:root[data-theme='dungeon'] .icon {
+  filter: grayscale(1) contrast(1.3) brightness(0.85);
+}
+
+:root[data-theme='dungeon'] .desktop-icon-label {
+  color: var(--bone);
+  text-shadow: 0 1px 2px #000;
+}
+
+:root[data-theme='dungeon'] .desktop-icon.selected .icon {
+  filter: grayscale(1) sepia(1) hue-rotate(-40deg) saturate(4) brightness(0.7);
+}
+
+:root[data-theme='dungeon'] .desktop-icon.selected .desktop-icon-label {
+  background: var(--select);
+}
+
+/* ── windows: black panels, hairline frame, blackletter titles ── */
+:root[data-theme='dungeon'] .window {
+  padding: 1px;
+  box-shadow: 0 0 0 1px var(--bone-dim), 0 20px 50px #000c;
+}
+
+:root[data-theme='dungeon'] .titlebar {
+  height: 30px;
+  padding: 0 4px 0 10px;
+  border-bottom: 1px solid #2c2420;
+  color: var(--muted);
+  font: 400 18px var(--gothic);
+  letter-spacing: 0.02em;
+}
+
+:root[data-theme='dungeon'] .window.active .titlebar {
+  color: var(--bone);
+  border-bottom-color: var(--blood);
+}
+
+:root[data-theme='dungeon'] .titlebar .icon {
+  display: none;
+}
+
+:root[data-theme='dungeon'] .titlebar-buttons button {
+  background: transparent;
+  color: var(--bone);
+}
+
+:root[data-theme='dungeon'] .titlebar-buttons button:hover {
+  box-shadow: inset 0 0 0 1px var(--blood);
+}
+
+:root[data-theme='dungeon'] .glyph-min {
+  background: var(--bone);
+}
+
+:root[data-theme='dungeon'] .glyph-max,
+:root[data-theme='dungeon'] .glyph-restore {
+  border-color: var(--bone);
+}
+
+:root[data-theme='dungeon'] .glyph-restore {
+  box-shadow: 2px -2px 0 -1px var(--face), 2px -2px 0 0 var(--bone);
+}
+
+:root[data-theme='dungeon'] .glyph-close {
+  font-family: var(--ui-font);
+}
+
+:root[data-theme='dungeon'] .group {
+  border: 1px solid #2c2420;
+  box-shadow: none;
+}
+
+:root[data-theme='dungeon'] .group legend,
+:root[data-theme='dungeon'] .about-head h1,
+:root[data-theme='dungeon'] .details h2 {
+  font-family: var(--gothic);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+}
+
+:root[data-theme='dungeon'] .about-head h1 {
+  font-size: 28px;
+}
+
+:root[data-theme='dungeon'] .button {
+  background: transparent;
+  color: var(--bone);
+}
+
+:root[data-theme='dungeon'] .button:hover {
+  box-shadow: inset 0 0 0 1px var(--bone);
+}
+
+:root[data-theme='dungeon'] .button:focus-visible {
+  outline-color: var(--bone);
+}
+
+:root[data-theme='dungeon'] .field,
+:root[data-theme='dungeon'] .paper-scroll,
+:root[data-theme='dungeon'] .seq-song select {
+  background: #070505;
+  color: var(--text);
+}
+
+:root[data-theme='dungeon'] .avatar {
+  background: #070505;
+}
+
+/* relic window: RPG item card */
+:root[data-theme='dungeon'] .relic-helmet {
+  width: 64px;
+  height: 70px;
+  fill: #0b0807;
+  stroke: var(--bone);
+  stroke-width: 4;
+}
+
+:root[data-theme='dungeon'] .relic-helmet .slit {
+  fill: #000;
+}
+
+:root[data-theme='dungeon'] .relic-helmet .hatch {
+  display: none;
+}
+
+:root[data-theme='dungeon'] .relic-card .about-head h1 {
+  font-size: 22px;
+}
+
+:root[data-theme='dungeon'] .relic-lore {
+  margin: 0 0 12px;
+  color: var(--bone);
+  font-style: italic;
+}
+
+:root[data-theme='dungeon'] .now dt {
+  color: var(--blood);
+}
+
+/* ── links page ── */
+:root[data-theme='dungeon'] .webpage {
+  background: #070505;
+  font-family: var(--ui-font);
+}
+
+:root[data-theme='dungeon'] .webpage h1 {
+  color: var(--bone);
+  font: 400 30px var(--gothic);
+  text-shadow: none;
+}
+
+:root[data-theme='dungeon'] .webpage h2 {
+  color: var(--blood);
+  font-family: var(--gothic);
+  font-weight: 400;
+}
+
+:root[data-theme='dungeon'] .webpage a,
+:root[data-theme='dungeon'] .plain-link {
+  color: var(--link);
+}
+
+:root[data-theme='dungeon'] .webpage ul {
+  list-style: '✠ ';
+}
+
+:root[data-theme='dungeon'] .button-88x31 {
+  border-color: var(--bone-dim);
+  background: #000;
+  color: var(--bone);
+  font: 400 15px var(--gothic);
+  text-shadow: none;
+}
+
+/* ── guestbook, crypt ── */
+:root[data-theme='dungeon'] .guestbook li,
+:root[data-theme='dungeon'] .guestbook li:nth-child(odd) {
+  background: #070505;
+}
+
+:root[data-theme='dungeon'] .guestbook-head b {
+  color: var(--bone);
+}
+
+:root[data-theme='dungeon'] .under-construction {
+  background: repeating-linear-gradient(45deg, var(--blood) 0 12px, #000 12px 24px);
+}
+
+:root[data-theme='dungeon'] .under-construction span {
+  background: #000;
+  color: var(--bone);
+}
+
+:root[data-theme='dungeon'] .error-text {
+  color: #e0525a;
+}
+
+/* ── portrait: an old photograph ── */
+:root[data-theme='dungeon'] .portrait img {
+  filter: grayscale(1) contrast(1.35) brightness(0.8) drop-shadow(0 0 1px #000) drop-shadow(4px 4px 0 #3a0a0d);
+}
+
+:root[data-theme='dungeon'] .portrait:hover img,
+:root[data-theme='dungeon'] .portrait:focus-visible img {
+  animation: none;
+  filter: grayscale(1) contrast(1.35) brightness(0.95) drop-shadow(0 0 12px #a3141c66);
+}
+
+:root[data-theme='dungeon'] .portrait-bubble {
+  border-color: var(--bone-dim);
+  background: #000;
+  color: var(--bone);
+  font-style: italic;
+  box-shadow: none;
+}
+
+:root[data-theme='dungeon'] .portrait-bubble::after {
+  border-top-color: var(--bone-dim);
+}
+
+:root[data-theme='dungeon'] .portrait-tag {
+  border: 1px solid var(--bone-dim);
+  background: #000;
+  color: var(--bone);
+  font: 400 15px var(--gothic);
+  rotate: 0deg;
+  animation: none;
+}
+
+/* ── taskbar & menus ── */
+:root[data-theme='dungeon'] .taskbar {
+  background: #050404;
+  box-shadow: 0 -1px 0 var(--bone-dim);
+}
+
+:root[data-theme='dungeon'] .start-button,
+:root[data-theme='dungeon'] .task {
+  background: transparent;
+  color: var(--bone);
+}
+
+:root[data-theme='dungeon'] .start-button {
+  font-family: var(--gothic);
+  font-size: 17px;
+  font-weight: 400;
+}
+
+:root[data-theme='dungeon'] .task.pressed {
+  background: #1a1210;
+  font-weight: 400;
+}
+
+:root[data-theme='dungeon'] .start-menu,
+:root[data-theme='dungeon'] .theme-menu {
+  background: #050404;
+}
+
+:root[data-theme='dungeon'] .start-menu-banner {
+  background: var(--blood);
+  color: var(--bone);
+  font: 400 18px var(--gothic);
+}
+
+:root[data-theme='dungeon'] .theme-button {
+  background: transparent;
+}
+
+:root[data-theme='dungeon'] .load-bar {
+  background: #000;
+}
+
+:root[data-theme='dungeon'] .load-bar span,
+:root[data-theme='dungeon'] .load-status.ready .load-bar span {
+  background: var(--blood);
+}
+
+/* ── sequencer: bone, blood and ash on black ── */
+:root[data-theme='dungeon'] .seq-grid,
+:root[data-theme='dungeon'] .seq-lcd,
+:root[data-theme='dungeon'] .seq-scope {
+  background: #050404;
+}
+
+:root[data-theme='dungeon'] .seq-label {
+  color: var(--muted);
+  font-family: var(--ui-font);
+}
+
+:root[data-theme='dungeon'] .seq-cell {
+  --c: var(--bone);
+  background: #120d0c;
+  box-shadow: inset 0 0 0 1px #1f1816;
+}
+
+:root[data-theme='dungeon'] .seq-cell.harmony {
+  --c: var(--blood);
+}
+
+:root[data-theme='dungeon'] .seq-cell.drums {
+  --c: #8a7c6c;
+}
+
+:root[data-theme='dungeon'] .seq-cell.beat {
+  background: #1a1311;
+}
+
+:root[data-theme='dungeon'] .seq-cell.head {
+  background: #2a1d1a;
+}
+
+:root[data-theme='dungeon'] .seq-cell.on {
+  background: var(--c);
+  box-shadow: none;
+}
+
+:root[data-theme='dungeon'] .seq-cell.on.head {
+  background: #fff;
+  box-shadow: 0 0 8px var(--c);
+}
+
+:root[data-theme='dungeon'] .seq-lcd {
+  color: var(--bone);
+  font-family: var(--gothic);
+  text-shadow: none;
+}
+
+:root[data-theme='dungeon'] .seq-bars span {
+  background: #2c2420;
+}
+
+:root[data-theme='dungeon'] .seq-bars span.lit {
+  background: var(--blood);
+  box-shadow: none;
+}
+
+:root[data-theme='dungeon'] .seq-knob input,
+:root[data-theme='dungeon'] .rack-knob input {
+  accent-color: var(--blood);
+}
+
+/* ── FX rack ── */
+:root[data-theme='dungeon'] .rack-board {
+  background: #050404;
+}
+
+:root[data-theme='dungeon'] .rack-module,
+:root[data-theme='dungeon'] .rack-seq,
+:root[data-theme='dungeon'] .rack-out {
+  background: #120d0c;
+}
+
+:root[data-theme='dungeon'] .rack-module-title {
+  font: 400 15px var(--gothic);
+  letter-spacing: 0.04em;
+}
+
+:root[data-theme='dungeon'] .jack {
+  border-color: #5a4e44;
+}
+
+:root[data-theme='dungeon'] .jack.plugged {
+  border-color: var(--bone);
+  box-shadow: 0 0 0 1px #000, 0 0 6px var(--blood);
+}
+
+:root[data-theme='dungeon'] .cable:not(.dragging) {
+  stroke: #8a7c6c;
+}
+
+:root[data-theme='dungeon'] .rack-cables g:nth-child(even) .cable {
+  stroke: var(--blood);
+}
+
+/* ── shutdown ── */
+:root[data-theme='dungeon'] .shutdown {
+  color: var(--bone);
+  font-family: var(--gothic);
+  font-weight: 400;
+}

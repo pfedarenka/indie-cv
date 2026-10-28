@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import pavelUrl from '../assets/pavel.webp'
 import heliosUrl from '../assets/helios.bin?url'
+import { useTheme } from '../themes'
 
-// Real work behind the progress bar. The 3D bits are not used on phones, so they are skipped there.
-const tasks: { label: string; desktopOnly: boolean; run: () => Promise<unknown> }[] = [
-  { label: 'loading 3D drivers', desktopOnly: true, run: () => import('../three/scene') },
-  { label: 'loading helios.obj', desktopOnly: true, run: () => fetch(heliosUrl).then((r) => r.arrayBuffer()) },
+// Real work behind the progress bar. The 3D bits are skipped on phones and in themes without 3D.
+const tasks: { label: string; is3d: boolean; run: () => Promise<unknown> }[] = [
+  { label: 'loading 3D drivers', is3d: true, run: () => import('../three/scene') },
+  { label: 'loading helios.obj', is3d: true, run: () => fetch(heliosUrl).then((r) => r.arrayBuffer()) },
   {
     label: 'loading pavel.webp',
-    desktopOnly: false,
+    is3d: false,
     run: () =>
       new Promise((resolve) => {
         const img = new Image()
@@ -23,7 +24,8 @@ const SHOW_READY_MS = 2500
 
 // A Win98-style progress readout in the taskbar tray; it fades out once everything is in.
 export function LoadStatus() {
-  const [active] = useState(() => tasks.filter((t) => !t.desktopOnly || window.innerWidth >= 640))
+  const { scene3d } = useTheme()
+  const [active] = useState(() => tasks.filter((t) => !t.is3d || (scene3d && window.innerWidth >= 640)))
   const [done, setDone] = useState<boolean[]>(() => active.map(() => false))
   const [shown, setShown] = useState(0) // blocks drawn; creeps toward the real progress
   const [phase, setPhase] = useState<'loading' | 'ready' | 'fading' | 'gone'>('loading')

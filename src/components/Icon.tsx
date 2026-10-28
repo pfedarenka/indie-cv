@@ -1,6 +1,16 @@
 import type { ReactNode } from 'react'
 
-export type IconName = 'computer' | 'document' | 'globe' | 'guestbook' | 'trash' | 'logo' | 'music' | 'column' | 'rack'
+export type IconName =
+  | 'computer'
+  | 'document'
+  | 'globe'
+  | 'guestbook'
+  | 'trash'
+  | 'logo'
+  | 'music'
+  | 'column'
+  | 'rack'
+  | 'helmet'
 
 // 32x32 pixel-ish icons, drawn with crisp edges so they look like old system icons.
 const icons: Record<IconName, ReactNode> = {
@@ -16,6 +26,15 @@ const icons: Record<IconName, ReactNode> = {
       <rect x="12.5" y="21.5" width="7" height="3" fill="#a0a0a0" stroke="#000" />
       <rect x="5.5" y="24.5" width="21" height="4" fill="#c0c0c0" stroke="#000" />
       <rect x="20" y="26" width="4" height="1" fill="#05ffa1" />
+    </>
+  ),
+  helmet: (
+    <>
+      <path d="M6.5 28.5V13.5Q6.5 3.5 16 3.5Q25.5 3.5 25.5 13.5V28.5Q16 30.5 6.5 28.5Z" fill="#9a9a9a" stroke="#000" />
+      <rect x="9" y="13" width="5" height="2" fill="#000" />
+      <rect x="18" y="13" width="5" height="2" fill="#000" />
+      <rect x="15" y="4" width="2" height="25" fill="#5a5a5a" />
+      <path d="M10 20h1M10 23h1M21 20h1M21 23h1" stroke="#000" />
     </>
   ),
   rack: (
