@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "identifier": "urn:air:pavelthewise.com:site:guide",
+      "displayName": "Pavel The Wise: site guide",
+      "description": "Plain-Markdown overview of the site for agents: who Pavel is and what each desktop window contains.",
+      "type": "text/plain",
+      "url": "https://pavelthewise.com/llms.txt",
+      "representativeQueries": [
+        "who is Pavel The Wise",
+        "what is on pavelthewise.com",
+        "where is the source code of pavelthewise.com"
+      ]
+    }
+  ]
+}

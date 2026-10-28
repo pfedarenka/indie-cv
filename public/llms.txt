@@ -1,0 +1,17 @@
+# Pavel The Wise
+
+> Personal indie-web site of Pavel, a software engineer, visionary and music collector living in Stockholm. Styled as a vaporwave Windows 98 desktop from an alternate 1998.
+
+The whole site is a single page: a fake desktop with draggable windows.
+
+## On the desktop
+
+- [Home](https://pavelthewise.com/): the desktop itself. It opens with Sequencer.exe, a 16-step browser sequencer with a slowed-down lo-fi loop and live FX knobs (filter, echo, space, wobble).
+- About Me: who Pavel is, plus a "Currently" box.
+- Links: contact e-mail.
+- Guestbook: messages from visitors (signing is under construction).
+- Helios.obj: info about the 3D bust on the desktop, a public-domain scan of cast KAS283 from [SMK – National Gallery of Denmark](https://open.smk.dk/).
+
+## Source
+
+- [Source code on GitHub](https://github.com/pfedarenka/indie-cv)
